@@ -60,6 +60,31 @@ def duration(audiofile, sample_rate) -> float:
     """
     return audiofile.shape[0] / sample_rate
 
+def mean_stddev(audiofile, absolut=True) -> tuple[float, float]:
+    """
+    returns mean and std-dev of the audiofile
+        Parameters:
+            audiofile: n-dimensional numpy array
+            absolut: set True to use absolut values for mean calculation
+        returns: tuple of mean and std-dev
+    """
+    axis = len(audiofile.shape) -1
+    assert axis in [0, 1]
+    return (np.mean(np.abs(audiofile), axis=axis), np.std(audiofile, axis=axis))
+
+def min_max(audiofile, absolut=True) -> tuple[float, float] | float:
+    """
+    returns min and max value of the audiofile
+        Parameters:
+            audiofile: n-dimensional numpy array
+            absolut:
+        returns: tuple of min and max value if absolut is false, a single float if absolut is true
+    """
+    axis = len(audiofile.shape) -1
+    assert axis in [0, 1]
+    return np.max(np.abs(audiofile)) if absolut else (np.min(audiofile, axis=axis), np.max(audiofile, axis=axis))
+
+
 def test():
     audio1, sr1 = sf.read('wav_data/06 Deep House/Bam Bam Beat.wav', dtype='float32')
     audio2, sr2 = sf.read('wav_data/06 Deep House/Underground States Chord Layers 02.wav', dtype='float32')
