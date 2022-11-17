@@ -16,7 +16,7 @@ def iter(mute=False):
         for audio_file in filter(lambda f: os.path.isfile(genre_directory/f) and f.endswith('.wav'), os.listdir(genre_directory)):
             file_counter += 1
             if not mute:
-                print("   Processing files:", file_counter, end='\r')
+                print("   Processed {n} files          ".format(n=file_counter), end='\r')
             yield genre_directory/audio_file
         if not mute:
-            print("-->Processed {n} files".format(n=file_counter))
+            print('')

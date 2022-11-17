@@ -1,47 +1,40 @@
 from pydub import AudioSegment
 import librosa as lr
 import soundfile as sf
+import numpy as np
 
 """
 Introduces some methods to perform preprocessing on audio data
 """
 
-# Standard lenght of the snippets
-UNIT_LENGTH_AUDIO_MILLIS = 3000
+def slice_to_length(audiofile, sr, length_ms, pad=True):
+    length_index = int(sr*length_ms/1000)
+    if pad and audiofile.shape[0] < length_index:
+        return np.concatenate((audiofile, np.zeros((length_index - audiofile.shape[0], 2), dtype=np.float32)), axis=0)
+    return audiofile[0:length_index, :]
 
+def to_mono_channel(audiofile):
+    return lr.to_mono(audiofile.T).T
+
+def resample(audiofile, old_sample_rate, new_sample_rate):
+    return lr.resample(audiofile.T, orig_sr=old_sample_rate, target_sr=new_sample_rate).T
+
+def channels(audiofile):
+    return 1 if len(audiofile.shape) <= 1 else audiofile.shape[1]
+
+def duration(audiofile, sample_rate):
+    return audiofile.shape[0] / sample_rate
 
 def test():
-    path = 'wav_data/06 Deep House/'
-    # 7 second sample
-    filename = 'Bang Bang Bass 02.wav'
-    u_length = to_unit_length(path + filename, export_to='test_unit_length.wav')
-    mono_channel = to_mono_channel(path + filename, export_to='test_mono_channel.wav')
-    resample(path + filename, 8000, export_to='test_downsample_8000.wav')
+    audio1, sr1 = sf.read('wav_data/06 Deep House/Bam Bam Beat.wav', dtype='float32')
+    audio2, sr2 = sf.read('wav_data/06 Deep House/Underground States Chord Layers 02.wav', dtype='float32')
 
-    assert len(u_length) == UNIT_LENGTH_AUDIO_MILLIS
-    assert mono_channel.channels == 1
+    print(audio1.shape[0]/sr1)
+    audio1 = slice_to_length(audio1, sr1, 5000)
+    print(audio1.shape[0]/sr1)
 
+    print(audio2.shape[0]/sr2)
+    audio2 = slice_to_length(audio2, sr2, 5000)
+    print(audio2.shape[0]/sr2)
 
-def to_unit_length(filename, export_to = None, length = UNIT_LENGTH_AUDIO_MILLIS):
-    audio_snippet = AudioSegment.from_wav(filename)[0:UNIT_LENGTH_AUDIO_MILLIS]
-    if not export_to is None: 
-        audio_snippet.export(export_to, format="wav")
-    return audio_snippet
-
-def to_mono_channel(filename, export_to = None):
-    audio = AudioSegment.from_wav(filename)
-    audio = audio.set_channels(1)
-    if not export_to is None: 
-        audio.export(export_to, format="wav")
-    return audio
-
-def resample(filename, new_sampling_rate, export_to = None):
-    data, sample_rate_original = sf.read(filename, dtype='float32')
-    data = lr.resample(data.T, orig_sr=sample_rate_original, target_sr=new_sampling_rate)
-    if not export_to is None:
-        sf.write(export_to, data.T, new_sampling_rate)
-    return data
-
-
-if __name__ == '__main__':
-    test()
+    assert audio1.shape == audio2.shape
