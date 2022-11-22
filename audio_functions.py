@@ -21,6 +21,29 @@ def slice_to_length(audiofile, sr, length_ms, pad=True):
         return np.concatenate((audiofile, np.zeros((length_index - audiofile.shape[0], 2), dtype=np.float32)), axis=0)
     return audiofile[0:length_index, :]
 
+def multi_slice_to_length(audiofile, sr, length_ms, pad=True):
+    """
+    slices the audiofile to multiple snippests in the desired length from the beginning on to the end
+    E.g. returns 5 snippets in 3 seconds length when passing an 15 second audio file length_ms=3000
+        Parameters:
+            audiofile: n-dimensional numpy array
+            sr: sample rate of the provided audio
+            length_ms: length of the sliced audio array
+            pad: if True, audio is zero padded at the end if the provided audio is shorter than the length_ms
+        returns: n-audio-snippets with length_ms of length
+    """
+    length_audio = audiofile.shape[0]
+    slice_index = 0
+    slice_interval = int(sr*length_ms/1000)
+
+    slices = []
+
+    while slice_index <= length_audio:
+        slices.append(slice_to_length(audiofile[slice_index:, :], sr, length_ms))
+        slice_index += slice_interval
+
+    return slices
+
 def to_mono_channel(audiofile):
     """
     converts a audiofile with multiple channels to a single (mono) channel audio file
