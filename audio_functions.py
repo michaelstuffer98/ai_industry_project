@@ -17,9 +17,13 @@ def slice_to_length(audiofile, sr, length_ms, pad=True):
         returns: first length_ms milliseconds of the passed audiofile
     """
     length_index = int(sr*length_ms/1000)
+    dims = audiofile.ndim
+    if dims > 2:
+        raise IOError("Undefined bahaviour for arrays with dimension>2")
     if pad and audiofile.shape[0] < length_index:
-        return np.concatenate((audiofile, np.zeros((length_index - audiofile.shape[0], 2), dtype=np.float32)), axis=0)
-    return audiofile[0:length_index, :]
+        zero_pad_dims = (length_index - audiofile.shape[0], dims) if dims == 2 else (length_index - audiofile.shape[0])
+        return np.concatenate((audiofile, np.zeros(zero_pad_dims, dtype=np.float32)), axis=0)
+    return audiofile[:length_index, :] if dims==2 else audiofile[:length_index]
 
 def multi_slice_to_length(audiofile, sr, length_ms, pad=True):
     """
@@ -35,14 +39,14 @@ def multi_slice_to_length(audiofile, sr, length_ms, pad=True):
     length_audio = audiofile.shape[0]
     slice_index = 0
     slice_interval = int(sr*length_ms/1000)
+    dims = audiofile.ndim
 
     slices = []
-
     while slice_index <= length_audio:
-        slices.append(slice_to_length(audiofile[slice_index:, :], sr, length_ms))
+        slices.append(slice_to_length(audiofile[slice_index:, :] if dims==2 else audiofile[slice_index:], sr, length_ms))
         slice_index += slice_interval
 
-    return slices
+    return np.array(slices, dtype=np.float32)
 
 def to_mono_channel(audiofile):
     """
