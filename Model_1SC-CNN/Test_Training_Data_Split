@@ -1,0 +1,26 @@
+# load the files of features from the extraction
+
+#f = np.load(os.getcwd()+"features_spectogram")
+melspec = f['mel']
+# split train-test data
+S_train, S_test, mel_train, mel_test = train_test_split(melspec, test_size= 0.2)
+
+
+# Mel-Spectrogram
+
+maximum = np.amax(mel_train)
+mel_train = mel_train/np.amax(maximum)
+mel_test = mel_test/np.amax(maximum)
+
+mel_train = mel_train.astype(np.float32)
+mel_test = mel_test.astype(np.float32)
+
+N, row, col = mel_train.shape
+mel_train = mel_train.reshape((N, row, col, 1))
+
+N, row, col = mel_test.shape
+mel_test = mel_test.reshape((N, row, col, 1))
+
+
+# Save Mel-Spectrogram train-test
+np.savez_compressed(os.getcwd()+"/new_mel_train_test.npz", mel_train= mel_train, mel_test= mel_test, y_train = y_train, y_test= y_test)
