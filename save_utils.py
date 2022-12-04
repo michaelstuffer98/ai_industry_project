@@ -23,12 +23,14 @@ def save_numpy_array_sliced(filename, data, data_dir='data', max_size_mb=90):
     
     n_iter = 0
 
+    print("Saved file to slices", filename)
+
     while rows_processed < rows_total:
         n_iter += 1
         n_rows = min(max_rows, data.shape[0])
         rows_processed += n_rows
-        f_name = f'{filename}_{n_iter}'
-        print("Saved slice to file", f_name)
+        f_name = f'{filename}_{n_iter:03d}'
+        print("   saved slice {n:03d} to ".format(n=n_iter), f_name)
         np.save(data_dir / f_name, data[:n_rows, :])
         data = data[n_rows:, :]
 
@@ -36,6 +38,9 @@ def save_numpy_array_sliced(filename, data, data_dir='data', max_size_mb=90):
         raise IOError("Failed writing all rows of array to file")
 
 def load_sliced_numpy_array(filename, data_dir = 'data'):
+    """
+    Load the slices back, not guaranteed to be in the order as the slices have been saved
+    """
     data_dir = Path(data_dir)
 
     data = None
