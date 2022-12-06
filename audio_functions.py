@@ -43,10 +43,11 @@ def multi_slice_to_length(audiofile, sr, length_ms, pad=True):
 
     slices = []
     while slice_index <= length_audio:
-        slices.append(slice_to_length(audiofile[slice_index:, :] if dims==2 else audiofile[slice_index:], sr, length_ms))
+        slices.append(((slice_to_length(audiofile[slice_index:, :] if dims==2 else audiofile[slice_index:], sr, length_ms)), sr))
         slice_index += slice_interval
 
-    return np.array(slices, dtype=np.float32)
+    return slices
+    #return np.array(slices, dtype=np.float32)
 
 def to_mono_channel(audiofile):
     """

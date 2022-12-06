@@ -11,7 +11,7 @@ def plot_waveform(amp, sr):
     plt.figure(figsize=(14, 5))
     lrd.waveshow(amp, sr=sr)
 
-def plot_melspectogram(S, sr, fmax):
+def plot_melspectogram(S, sr, fmax, save_fig=True):
     fig, ax = plt.subplots()
     S_dB = librosa.power_to_db(S, ref=np.max)
     img = librosa.display.specshow(S_dB, x_axis='time',
@@ -19,4 +19,5 @@ def plot_melspectogram(S, sr, fmax):
                                    fmax=fmax, ax=ax)
     fig.colorbar(img, ax=ax, format='%+2.0f dB')
     ax.set(title='Mel-frequency spectrogram')
-    fig.savefig('Plots/melfrequency_spectogram with fmax{}'.format(fmax))
+    if save_fig:
+        fig.savefig('Plots/melfrequency_spectogram with fmax{f}.jpg'.format(f=int(fmax)))
