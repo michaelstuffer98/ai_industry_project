@@ -100,7 +100,7 @@ def mean_stddev(audiofile, absolut=True) -> tuple[float, float]:
     assert axis in [0, 1]
     return (np.mean(np.abs(audiofile), axis=axis), np.std(audiofile, axis=axis))
 
-def min_max(audiofile, absolut=True) -> tuple[float, float] | float:
+def min_max(audiofile, absolut=True):
     """
     returns min and max value of the audiofile
         Parameters:
