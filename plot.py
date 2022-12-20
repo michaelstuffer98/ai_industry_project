@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import librosa.display as lrd
 import numpy as np
 import librosa
-
+import seaborn as sn
 
 def plot_waveform(amp, sr):
     """
@@ -37,3 +37,11 @@ def plot_hist(history, keys, legends, title, y_label, x_label):
     plt.grid()
     plt.legend(legends, loc='upper left')
     plt.show()
+
+def plot_conf_mat(conf_mat_df, save_to=None):
+    plt.figure(figsize = (7,6))
+    sn.set(font_scale=0.9)
+    sn.heatmap(conf_mat_df, annot=True, cmap='Blues', annot_kws={"size": 12})
+    plt.tight_layout()
+    if not save_to is None:
+        plt.savefig(save_to)
