@@ -24,18 +24,26 @@ def plot_melspectogram(S, sr, fmax, save_fig=True):
     if save_fig:
         fig.savefig('Plots/melfrequency_spectogram with fmax{f}.jpg'.format(f=int(fmax)))
 
-def plot_hist(history, keys, legends, title, y_label, x_label):
+def plot_hist(history, keys, legends, title, y_label, x_label, save_to=None):
     max_size = 0
+    fig, ax = plt.subplots()
+
+    ax.set_facecolor('white')
+
     for key in keys:
         if max_size < len(history[key]):
             max_size = len(history[key])
-        plt.plot(history[key])
-    # plt.xticks(range(max_size))
-    plt.title(title)
-    plt.ylabel(y_label)
-    plt.xlabel(x_label)
-    plt.grid()
-    plt.legend(legends, loc='upper left')
+        ax.plot(history[key])
+
+    ax.set_title(title)
+    ax.set_ylabel(y_label)
+    ax.set_xlabel(x_label)
+    ax.grid(b=True, alpha=1.0, color='black')
+    ax.legend(legends, loc='upper left')
+
+    if not save_to is None:
+        fig.savefig(save_to)
+    
     plt.show()
 
 def plot_conf_mat(conf_mat_df, save_to=None):
@@ -45,3 +53,4 @@ def plot_conf_mat(conf_mat_df, save_to=None):
     plt.tight_layout()
     if not save_to is None:
         plt.savefig(save_to)
+    plt.show()
