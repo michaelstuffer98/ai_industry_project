@@ -5,8 +5,48 @@ from pathlib import Path
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
-import save_utils
+from keras.layers import (
+    Input,
+    GlobalAvgPool1D,
+    Dense,
+    Dropout,
+)
+from keras.models import Model
+from keras.optimizers import Adam
 
+from transformer import Encoder
+def transformer_model(model_config, n_classes):
+    num_layers = model_config['n_layers']
+    d_model = model_config['d_model']
+    num_heads = model_config['n_heads']
+    dff = model_config['dff']
+    maximum_position_encoding = model_config['max_pos_encoding']
+    init_lr = model_config['init_learning_rate']
+    dropout_rate = model_config['dropout_rate']
+    activations = model_config['activations']
+
+    input_layer = Input((None, d_model))
+
+    encoder = Encoder(
+        num_layers=num_layers,
+        d_model=d_model,
+        num_heads=num_heads,
+        dff=dff,
+        maximum_position_encoding=maximum_position_encoding,
+        rate=model_config['encoder_rate']
+    )
+
+    x = encoder(input_layer)
+    x = Dropout(dropout_rate)(x)
+    x = GlobalAvgPool1D()(x)
+    x = Dense(4 * n_classes, activation=activations[0])(x)
+
+    out = Dense(n_classes, activation=activations[1])(x)
+
+    model = Model(inputs=input_layer, outputs=out)
+    model.compile(optimizer=Adam(init_lr), loss=custom_binary_crossentropy, metrics=[custom_binary_accuracy])
+    model.summary()
+    return model
 
 if __name__ == "__main__":
     with open('music_tag_transformer/transformer_config.yaml', 'r') as f:
