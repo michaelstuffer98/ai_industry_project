@@ -49,6 +49,7 @@ def transformer_model(model_config, n_classes):
     return model
 
 if __name__ == "__main__":
+    # read in the config
     with open('music_tag_transformer/transformer_config.yaml', 'r') as f:
         config = yaml.safe_load(f)
 
@@ -64,9 +65,14 @@ if __name__ == "__main__":
     with open(data_dir/'class_label_index_mapping.json', 'r') as f:
         labels_to_id = json.load(f)
 
-    print(labels_to_id)
+    mel_train, mel_test_val, lab_train, lab_test_val = train_test_split(melspec_data, labels, train_size=config['train_set_size'], random_state=config['random_state'])
+    mel_val, mel_test, lab_val, lab_test             = train_test_split(mel_test_val, lab_test_val, test_size=(config['val_set_size']/(1-config['train_set_size'])), shuffle=False)
 
-    mel_train, mel_val, lab_train, lab_val = train_test_split(melspec_data, labels, test_size=config['test_set_size'], random_state=config['random_state'])
+    # Check the shapes of the splitted sets
+    assert mel_train.shape[0] == lab_train.shape[0] and mel_test.shape[0] == lab_test.shape[0] and mel_val.shape[0] == lab_val.shape[0]
+    assert mel_train.shape[1] == mel_test.shape[1] == mel_val.shape[1] and lab_train.shape[1] == lab_test.shape[1] == lab_val.shape[1]
+
+    model = transformer_model(config['model_structure'], n_classes=len(labels_to_id))
 
     assert mel_train.shape[0] == lab_train.shape[0] and mel_val.shape[0] == lab_val.shape[0] and mel_val.shape[0] == lab_val.shape[0]
 
