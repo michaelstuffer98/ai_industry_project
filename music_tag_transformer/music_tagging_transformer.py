@@ -1,10 +1,13 @@
 import json
 import yaml
-import numpy as np
 from pathlib import Path
-import pandas as pd
+import save_utils
+
+import numpy as np
 
 from sklearn.model_selection import train_test_split
+
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from keras.layers import (
     Input,
     GlobalAvgPool1D,
@@ -15,6 +18,32 @@ from keras.models import Model
 from keras.optimizers import Adam
 
 from transformer import Encoder
+
+from tensorflow.python.ops import math_ops
+from tensorflow.python.framework import ops
+from tensorflow.python.keras import backend as K
+from tensorflow.python.ops import clip_ops
+
+def custom_binary_accuracy(y_true, y_pred, threshold=0.5):
+    threshold = math_ops.cast(threshold, y_pred.dtype)
+    y_pred = math_ops.cast(y_pred > threshold, y_pred.dtype)
+    y_true = math_ops.cast(y_true > threshold, y_true.dtype)
+
+    return K.mean(math_ops.equal(y_true, y_pred), axis=-1)
+
+
+def custom_binary_crossentropy(y_true, y_pred):
+    y_pred = ops.convert_to_tensor(y_pred)
+    y_true = math_ops.cast(y_true, y_pred.dtype)
+    epsilon_ = K._constant_to_tensor(K.epsilon(), y_pred.dtype.base_dtype)
+    output = clip_ops.clip_by_value(y_pred, epsilon_, 1.0 - epsilon_)
+
+    # Compute cross entropy from probabilities.
+    bce = 4 * y_true * math_ops.log(output + K.epsilon())
+    bce += (1 - y_true) * math_ops.log(1 - output + K.epsilon())
+    return K.sum(-bce, axis=-1)
+
+
 def transformer_model(model_config, n_classes):
     num_layers = model_config['n_layers']
     d_model = model_config['d_model']
@@ -74,8 +103,34 @@ if __name__ == "__main__":
 
     model = transformer_model(config['model_structure'], n_classes=len(labels_to_id))
 
-    assert mel_train.shape[0] == lab_train.shape[0] and mel_val.shape[0] == lab_val.shape[0] and mel_val.shape[0] == lab_val.shape[0]
+    # load pretrained model
+    # if transformer_pretrained_name:
+    #    model.load_weights(transformer_pretrained_name, by_name=True)
 
-    exit(0)
+    train_config = config['training']
 
+    checkpoint = ModelCheckpoint(
+        transformer_name,
+        monitor=train_config['monitor'],
+        verbose=1,
+        save_best_only=train_config['save_best_weights'],
+        mode=train_config['monitor_mode'],
+        save_weights_only=False
+    )
 
+    # Reduce learning rate when val_loss stopps improving
+    lr_reduce_config = train_config['lr_reducing']
+    lr_reducing_on_platteau = ReduceLROnPlateau(
+        monitor=lr_reduce_config['monitor'], patience=lr_reduce_config['patience'], min_lr=lr_reduce_config['min_lr'], mode=lr_reduce_config['mode']
+    )
+
+    model.fit(
+        x=mel_train,
+        y=lab_train,
+        validation_data=(mel_val, lab_val),
+        batch_size=batch_size,
+        epochs=epochs,
+        callbacks=[checkpoint, lr_reducing_on_platteau],
+        use_multiprocessing=True,
+        verbose=2
+    )
