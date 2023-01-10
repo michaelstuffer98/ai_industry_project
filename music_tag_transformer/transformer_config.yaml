@@ -3,4 +3,5 @@ epochs: 50
 pretrained_transformer: transformer_pretrained.h5
 transformer_name: transformer.h5
 random_state: 42
-test_size: 0.2
+test_set_size: 0.2
+data_dir: data
