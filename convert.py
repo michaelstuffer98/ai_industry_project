@@ -3,7 +3,12 @@ from pydub.playback import play
 import os
 from pathlib import Path
 
-genre_folders = ["09 Disco Funk"]
+######################################################################################################
+# Small script for the initlian conversion from mp3 to wav data, since python bindings work better 
+# using .wav file format
+######################################################################################################
+
+genre_folders = ["06 Deep House", "09 Disco Funk", "12 Chinese Traditional", "15 Reggaeton Pop", "Keyboard Collection"]
 
 wav_data_dir_name = "wav_data"
 
