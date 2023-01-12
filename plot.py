@@ -13,10 +13,11 @@ def plot_waveform(amp, sr):
     plt.figure(figsize=(14, 5))
     lrd.waveshow(amp, sr=sr)
 
-def plot_melspectogram(S, sr, fmax, save_fig=True):
+def plot_melspectogram(S, sr, fmax, calculate_db=True, save_fig=True):
     fig, ax = plt.subplots()
-    S_dB = librosa.power_to_db(S, ref=np.max)
-    img = librosa.display.specshow(S_dB, x_axis='time',
+    if calculate_db:
+        S = librosa.power_to_db(S, ref=np.max)
+    img = librosa.display.specshow(S, x_axis='time',
                                    y_axis='mel', sr=sr,
                                    fmax=fmax, ax=ax)
     fig.colorbar(img, ax=ax, format='%+2.0f dB')
