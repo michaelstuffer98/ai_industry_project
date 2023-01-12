@@ -1,0 +1,36 @@
+
+train_size: 0.6
+val_size: 0.2
+random_state: 42
+model structure:
+  n_mels: 128
+  activation: ['relu', softmax]
+
+
+batch_size: 32
+epochs: 10
+pretrained_transformer: transformer_pretrained.h5
+transformer_name: transformer.h5
+random_state: 42
+train_set_size: 0.6
+val_set_size: 0.2
+data_dir: data
+model_structure:
+  n_layers: 4
+  d_model: 128
+  n_heads: 8
+  dff: 256
+  max_pos_encoding: 2048
+  init_learning_rate: 0.001
+  dropout_rate: 0.2
+  encoder_rate: 0.3
+  activations: [selu, sigmoid]
+training:
+  monitor: val_loss
+  monitor_mode: min
+  save_best_weights: True
+  lr_reducing:
+    monitor: val_loss
+    patience: 20
+    min_lr: 1.e-7
+    mode: min
