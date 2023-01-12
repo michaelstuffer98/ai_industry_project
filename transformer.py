@@ -16,11 +16,15 @@ import tensorflow as tf
 
 
 def get_angles(pos, i, d_model):
+    """Getting the angle rates of the position of the model
+    """
     angle_rates = 1 / np.power(10000, (2 * (i // 2)) / np.float32(d_model))
     return pos * angle_rates
 
 
 def positional_encoding(position, d_model):
+    """Retrieving the positional encodings of the model which means where the data points exist
+    """
     angle_rads = get_angles(
         np.arange(position)[:, np.newaxis], np.arange(d_model)[np.newaxis, :], d_model
     )
@@ -37,40 +41,25 @@ def positional_encoding(position, d_model):
 
 
 def scaled_dot_product_attention(q, k, v, mask):
-    """Calculate the attention weights.
-    q, k, v must have matching leading dimensions.
-    k, v must have matching penultimate dimension, i.e.: seq_len_k = seq_len_v.
-    The mask has different shapes depending on its type(padding or look ahead)
-    but it must be broadcastable for addition.
-
-    Args:
-      q: query shape == (..., seq_len_q, depth)
-      k: key shape == (..., seq_len_k, depth)
-      v: value shape == (..., seq_len_v, depth_v)
-      mask: Float tensor with shape broadcastable
-            to (..., seq_len_q, seq_len_k). Defaults to None.
-
-    Returns:
-      output, attention_weights
+    """Calculating the attention weights where q is the query shape, k is the key shape and v is the value shape
     """
 
-    matmul_qk = tf.matmul(q, k, transpose_b=True)  # (..., seq_len_q, seq_len_k)
+    matmul_qk = tf.matmul(q, k, transpose_b=True)
 
-    # scale matmul_qk
+    # matmul_dk is being scaled
     dk = tf.cast(tf.shape(k)[-1], tf.float32)
     scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
 
-    # add the mask to the scaled tensor.
+    # Adding the mask 
     if mask is not None:
         scaled_attention_logits += mask * -1e9
 
-        # softmax is normalized on the last axis (seq_len_k) so that the scores
-    # add up to 1.
+    # Having the weights being normalized by softmax
     attention_weights = tf.nn.softmax(
         scaled_attention_logits, axis=-1
-    )  # (..., seq_len_q, seq_len_k)
+    )  
 
-    output = tf.matmul(attention_weights, v)  # (..., seq_len_q, depth_v)
+    output = tf.matmul(attention_weights, v) 
 
     return output, attention_weights
 
@@ -92,8 +81,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         self.dense = tf.keras.layers.Dense(d_model)
 
     def split_heads(self, x, batch_size):
-        """Split the last dimension into (num_heads, depth).
-        Transpose the result such that the shape is (batch_size, num_heads, seq_len, depth)
+        """Heads are being split. Result is transposed. 
         """
         x = tf.reshape(x, (batch_size, -1, self.num_heads, self.depth))
         return tf.transpose(x, perm=[0, 2, 1, 3])
@@ -101,38 +89,40 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     def call(self, v, k, q, mask=None):
         batch_size = tf.shape(q)[0]
 
-        q = self.wq(q)  # (batch_size, seq_len, d_model)
-        k = self.wk(k)  # (batch_size, seq_len, d_model)
-        v = self.wv(v)  # (batch_size, seq_len, d_model)
+        #Getting the batch size, sequence length and input length of the model
+        q = self.wq(q)  
+        k = self.wk(k)  
+        v = self.wv(v)  
 
-        q = self.split_heads(q, batch_size)  # (batch_size, num_heads, seq_len_q, depth)
-        k = self.split_heads(k, batch_size)  # (batch_size, num_heads, seq_len_k, depth)
-        v = self.split_heads(v, batch_size)  # (batch_size, num_heads, seq_len_v, depth)
+        #Splitting the heads of the data
+        q = self.split_heads(q, batch_size)  
+        k = self.split_heads(k, batch_size)  
+        v = self.split_heads(v, batch_size)  
 
-        # scaled_attention.shape == (batch_size, num_heads, seq_len_q, depth)
-        # attention_weights.shape == (batch_size, num_heads, seq_len_q, seq_len_k)
         scaled_attention, attention_weights = scaled_dot_product_attention(
             q, k, v, mask
         )
-
+        #Transpose the scaled attention
         scaled_attention = tf.transpose(
             scaled_attention, perm=[0, 2, 1, 3]
-        )  # (batch_size, seq_len_q, num_heads, depth)
-
+        )  
+        #Reshape the scaled attention
         concat_attention = tf.reshape(
             scaled_attention, (batch_size, -1, self.d_model)
-        )  # (batch_size, seq_len_q, d_model)
+        )  
 
-        output = self.dense(concat_attention)  # (batch_size, seq_len_q, d_model)
+        output = self.dense(concat_attention)  
 
         return output, attention_weights
 
 
 def point_wise_feed_forward_network(d_model, dff):
+    """A sequential forward network with two different dense layers
+    """
     return tf.keras.Sequential(
         [
-            tf.keras.layers.Dense(dff, activation="relu"),  # (batch_size, seq_len, dff)
-            tf.keras.layers.Dense(d_model),  # (batch_size, seq_len, d_model)
+            tf.keras.layers.Dense(dff, activation="relu"),  
+            tf.keras.layers.Dense(d_model),  
         ]
     )
 
@@ -141,30 +131,36 @@ class EncoderLayer(tf.keras.layers.Layer):
     def __init__(self, d_model, num_heads, dff, rate=0.1):
         super(EncoderLayer, self).__init__()
 
+        #Implement the multiheadattention class 
         self.mha = MultiHeadAttention(d_model, num_heads)
+        #Implement the sequential forward network
         self.ffn = point_wise_feed_forward_network(d_model, dff)
 
+        #Implement two normalization layers
         self.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
+        #Implement two dropout layers 
         self.dropout1 = tf.keras.layers.Dropout(rate)
         self.dropout2 = tf.keras.layers.Dropout(rate)
 
     def call(self, x, training=None, mask=None):
-        attn_output, _ = self.mha(x, x, x, mask)  # (batch_size, input_seq_len, d_model)
+        attn_output, _ = self.mha(x, x, x, mask)  
         attn_output = self.dropout1(attn_output, training=training)
-        out1 = self.layernorm1(x + attn_output)  # (batch_size, input_seq_len, d_model)
+        out1 = self.layernorm1(x + attn_output)  
 
-        ffn_output = self.ffn(out1)  # (batch_size, input_seq_len, d_model)
+        ffn_output = self.ffn(out1) 
         ffn_output = self.dropout2(ffn_output, training=training)
         out2 = self.layernorm2(
             out1 + ffn_output
-        )  # (batch_size, input_seq_len, d_model)
+        )  
 
         return out2
 
 
 class Encoder(tf.keras.layers.Layer):
+    """This Encoder class will encode the data
+    """
     def __init__(
         self, num_layers, d_model, num_heads, dff, maximum_position_encoding, rate=0.1,
     ):
@@ -183,8 +179,9 @@ class Encoder(tf.keras.layers.Layer):
 
     def call(self, x, training=None, mask=None):
         seq_len = tf.shape(x)[1]
-
+        # Transform the data mathematicall
         x *= tf.math.sqrt(tf.cast(self.d_model, tf.float32))
+        #Add the position of the data to the data
         x += self.pos_encoding[:, :seq_len, :]
 
         x = self.dropout(x, training=training)
@@ -195,25 +192,3 @@ class Encoder(tf.keras.layers.Layer):
         return x  # (batch_size, input_seq_len, d_model)
 
 
-class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-    def __init__(self, d_model, warmup_steps=4000, name=None):
-        super(CustomSchedule, self).__init__()
-
-        self.d_model = d_model
-        self.d_model = tf.cast(self.d_model, tf.float32)
-
-        self.warmup_steps = warmup_steps
-        self.name = name  # Modified from the source
-
-    def __call__(self, step):
-        arg1 = tf.math.rsqrt(step)
-        arg2 = step * (self.warmup_steps ** -1.5)
-
-        return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
-
-    def get_config(self):  # Modified from the source
-        return {
-            "d_model": self.d_model,
-            "warmup_steps": self.warmup_steps,
-            "name": self.name,
-        }
