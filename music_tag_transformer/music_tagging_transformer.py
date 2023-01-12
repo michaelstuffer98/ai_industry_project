@@ -7,7 +7,7 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 
-from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from keras.layers import (
     Input,
     GlobalAvgPool1D,
@@ -118,19 +118,31 @@ if __name__ == "__main__":
         save_weights_only=False
     )
 
+    early_stopping = EarlyStopping(
+        monitor = 'val_loss',
+        patience = 10,
+        verbose = 1,
+        mode = 'min',
+        restore_best_weights = True,
+        start_from_epoch = 5
+    )
+
     # Reduce learning rate when val_loss stopps improving
     lr_reduce_config = train_config['lr_reducing']
     lr_reducing_on_platteau = ReduceLROnPlateau(
         monitor=lr_reduce_config['monitor'], patience=lr_reduce_config['patience'], min_lr=lr_reduce_config['min_lr'], mode=lr_reduce_config['mode']
     )
 
-    model.fit(
+    mel_train = mel_train.reshape(mel_train.shape[0], -1, 128)
+    mel_val   = mel_val.reshape(mel_val.shape[0], -1, 128)
+
+    history = model.fit(
         x=mel_train,
         y=lab_train,
         validation_data=(mel_val, lab_val),
         batch_size=batch_size,
         epochs=epochs,
-        callbacks=[checkpoint, lr_reducing_on_platteau],
+        callbacks=[checkpoint, lr_reducing_on_platteau, early_stopping],
         use_multiprocessing=True,
         verbose=2
     )
