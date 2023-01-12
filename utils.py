@@ -110,3 +110,9 @@ def audio_file_iterator(mute=False):
             yield genre_directory/audio_file
         if not mute:
             print('')
+
+
+def get_config(name):
+    # read in the config
+    with open(f'configs/{name}_config.yaml', 'r') as f:
+        return yaml.safe_load(f)
