@@ -91,6 +91,12 @@ def get_class_names():
     with open('data/class_label_index_mapping.json', 'r') as f:
         return json.load(f).keys()
 
+
+def get_class_mapping():
+    with open('data/class_label_index_mapping.json', 'r') as f:
+        return json.load(f)
+
+
 def audio_file_iterator(mute=False):
     """
     Iteratable object to iterate over all wav-audio files in the 'wav_data' directory
