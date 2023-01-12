@@ -1,0 +1,5 @@
+unit_length_ms: 3000
+downsample_rate: 4000
+melspectogram:
+  n_mels: 128
+  hop_length: 512
