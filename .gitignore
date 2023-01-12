@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 .DS_Store
 
-music_genre_classification/
+models/
