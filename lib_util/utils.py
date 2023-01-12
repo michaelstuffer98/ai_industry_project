@@ -10,7 +10,7 @@ import os
 import re
 import yaml
 import pickle
-from keras.models import load_model
+import keras.models
 import json
 
 
@@ -84,7 +84,7 @@ def load_history(name):
         return pickle.load(f)
 
 def load_model(name):
-    return load_model(f'model/{name}_trained')
+    return keras.models.load_model(f'models/{name}_trained')
 
 
 def get_class_names():

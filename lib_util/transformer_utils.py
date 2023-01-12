@@ -13,6 +13,7 @@
 
 import numpy as np
 import tensorflow as tf
+import keras.utils
 
 
 def get_angles(pos, i, d_model):
@@ -64,6 +65,7 @@ def scaled_dot_product_attention(q, k, v, mask):
     return output, attention_weights
 
 
+@keras.utils.register_keras_serializable
 class MultiHeadAttention(tf.keras.layers.Layer):
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
@@ -127,6 +129,7 @@ def point_wise_feed_forward_network(d_model, dff):
     )
 
 
+@keras.utils.register_keras_serializable
 class EncoderLayer(tf.keras.layers.Layer):
     def __init__(self, d_model, num_heads, dff, rate=0.1):
         super(EncoderLayer, self).__init__()
@@ -158,6 +161,7 @@ class EncoderLayer(tf.keras.layers.Layer):
         return out2
 
 
+@keras.utils.register_keras_serializable
 class Encoder(tf.keras.layers.Layer):
     """This Encoder class will encode the data
     """
@@ -190,5 +194,3 @@ class Encoder(tf.keras.layers.Layer):
             x = self.enc_layers[i](x, training, mask)
 
         return x  # (batch_size, input_seq_len, d_model)
-
-
