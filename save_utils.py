@@ -8,6 +8,11 @@ import numpy as np
 from pathlib import Path
 import os
 import re
+import yaml
+import pickle
+from keras.models import load_model
+import json
+
 
 def save_numpy_array_sliced(filename, data, data_dir='data', max_size_mb=90):
     assert data.ndim == 2
@@ -60,3 +65,28 @@ def load_sliced_numpy_array(filename, data_dir = 'data'):
     [print("   ", file) for file in files_loaded]
 
     return data
+
+
+def save_training(to_dump: dict, name:str):
+    model = to_dump['model']
+    model.save_weights(f'models/{name}_trained_weights')
+    model.save(f'models/{name}_trained')
+
+    with open(f'models/{name}_history', 'wb') as f:
+        pickle.dump(to_dump['history'].history, f)
+
+    with open(f'models/{name}_config.yaml', 'w') as f:
+        yaml.dump(to_dump['config'], f, default_flow_style=False)
+
+
+def load_history(name):
+    with open(f'models/{name}_history', 'rb') as f:
+        return pickle.load(f)
+
+def load_model(name):
+    return load_model(f'model/{name}_trained')
+
+
+def get_class_names():
+    with open('data/class_label_index_mapping.json', 'r') as f:
+        return json.load(f).keys()
