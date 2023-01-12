@@ -1,7 +1,7 @@
 batch_size: 32
 epochs: 40
-pretrained_transformer: transformer_pretrained.h5
-transformer_name: transformer.h5
+pretrained_rnn: rnn_pretrained.h5
+rnn_name: rnn.h5
 random_state: 42
 train_set_size: 0.6
 val_set_size: 0.2
@@ -9,12 +9,9 @@ data_dir: data
 model_structure:
   n_layers: 4
   d_model: 128
-  n_heads: 8
-  dff: 256
   max_pos_encoding: 2048
   init_learning_rate: 0.001
   dropout_rate: 0.2
-  encoder_rate: 0.3
   activations: [selu, sigmoid]
 training:
   monitor: val_loss
