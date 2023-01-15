@@ -42,29 +42,45 @@ def save_numpy_array_sliced(filename, data, data_dir='data', max_size_mb=90):
     if rows_total != rows_processed:
         raise IOError("Failed writing all rows of array to file")
 
+    return n_iter
+
+
 def load_sliced_numpy_array(filename, data_dir = 'data'):
     """
     Load the slices back, not guaranteed to be in the order as the slices have been saved
     """
     data_dir = Path(data_dir)
-
-    data = None
     regex_pattern = filename + '_[0-9]*.npy'
 
-    files_loaded = []
-
+    file_names = []
     for file in filter(lambda d: os.path.isfile(data_dir/d), os.listdir(data_dir)):
         if re.match(regex_pattern, file):
-            if data is None:
-                data = np.load(data_dir/file)
-            else:
-                data = np.vstack([data, np.load(data_dir/file)])
-            files_loaded.append(file)
+            file_names.append(file)
     
-    print(f"Loaded {len(files_loaded)} files:")
-    [print("   ", file) for file in files_loaded]
+    data = None
+    for file in sorted(file_names):
+        if data is None:
+            data = np.load(data_dir/file)
+        else:
+            data = np.vstack([data, np.load(data_dir/file)])
+        print(f"Load slice from file {file}")
+    
+    print(f"Loaded {len(file_names)} files as slices, resulting shape: {data.shape}")
 
     return data
+
+
+def test_load_save_routine():
+    # Check if array after saving and loading is still equal
+    array_before = np.random.randint(0, 100, (10000, 500))
+
+    n_iter = save_numpy_array_sliced('tmp_array', array_before, max_size_mb=1)
+    array_after = load_sliced_numpy_array('tmp_array')
+
+    assert np.abs(array_after - array_before).sum() == 0
+
+    for i in range(n_iter):
+        os.remove(f'data/tmp_array_{(i+1):03}.npy')
 
 
 def save_training(to_dump: dict, name:str):
