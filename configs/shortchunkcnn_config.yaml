@@ -4,7 +4,7 @@ val_size: 0.2
 model_name: shortchunkcnn
 batch_size: 32
 epochs: 100
-random_state: 42
+random_state: 420
 train_set_size: 0.6
 val_set_size: 0.2
 model_structure:

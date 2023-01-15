@@ -1,16 +1,16 @@
-batch_size: 32
+batch_size: 128
 epochs: 40
 model_name: rnn
-random_state: 42
+random_state: 420
 train_set_size: 0.6
 val_set_size: 0.2
 data_dir: data
 model_structure:
-  n_layers: 4
+  n_layers: 2
   d_model: 128
-  max_pos_encoding: 2048
-  init_learning_rate: 0.001
-  dropout_rate: 0.2
+  max_pos_encoding: 1024
+  init_learning_rate: 0.0001
+  dropout_rate: 0.3
   activations: [selu, sigmoid]
 training:
   monitor: val_loss
@@ -18,6 +18,11 @@ training:
   save_best_weights: True
   lr_reducing:
     monitor: val_loss
-    patience: 20
+    patience: 3
     min_lr: 1.e-7
     mode: min
+  early_stopping:
+    patience: 3
+    monitor: val_loss
+    mode: min
+    start_from_epoch: 1
