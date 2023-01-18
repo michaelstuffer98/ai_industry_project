@@ -47,10 +47,16 @@ def plot_hist(history, keys, legends, title, y_label, x_label, save_to=None):
     
     plt.show()
 
-def plot_conf_mat(conf_mat_df, save_to=None):
+def plot_conf_mat(conf_mat_df, save_to=None, name=None, set_type=None):
     plt.figure(figsize = (7,6))
     sn.set(font_scale=0.9)
-    sn.heatmap(conf_mat_df, annot=True, cmap='Blues', annot_kws={"size": 12})
+    ax = sn.heatmap(conf_mat_df, annot=True, cmap='Blues', annot_kws={"size": 12})
+    if not name is None:
+        if not set_type is None:
+            set_type += ' set'
+        else:
+            set_type = ''
+        ax.set_title(f'{name} confusion matrix {set_type}')
     plt.tight_layout()
     if not save_to is None:
         plt.savefig(save_to)

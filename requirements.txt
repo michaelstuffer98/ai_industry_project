@@ -7,3 +7,5 @@ pandas>=1.5.2
 pydub>=0.25.1
 seaborn>=0.12.2
 matplotlib>=3.6.3
+pydot>=1.4.2
+evaluate>=0.4.0
