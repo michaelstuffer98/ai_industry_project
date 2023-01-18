@@ -83,24 +83,28 @@ def test_load_save_routine():
         os.remove(f'data/tmp_array_{(i+1):03}.npy')
 
 
-def save_training(to_dump: dict, name:str):
+def save_training(to_dump: dict, name:str, dir='models'):
+    dir = Path(dir)
+    
     model = to_dump['model']
-    model.save_weights(f'models/{name}_trained_weights')
-    model.save(f'models/{name}_trained')
+    model.save_weights(dir/f'{name}_trained_weights')
+    model.save(dir/f'{name}_trained')
 
-    with open(f'models/{name}_history', 'wb') as f:
-        pickle.dump(to_dump['history'].history, f)
+    with open(dir/f'{name}_history', 'wb') as f:
+        pickle.dump(to_dump['history'], f)
 
-    with open(f'models/{name}_config.yaml', 'w') as f:
+    with open(dir/f'{name}_config.yaml', 'w') as f:
         yaml.dump(to_dump['config'], f, default_flow_style=False)
 
 
-def load_history(name):
-    with open(f'models/{name}_history', 'rb') as f:
+def load_history(name, dir='models'):
+    dir = Path(dir)
+    with open(dir/f'{name}_history', 'rb') as f:
         return pickle.load(f)
 
-def load_model(name):
-    return keras.models.load_model(f'models/{name}_trained')
+def load_model(name, dir='models'):
+    dir = Path(dir)
+    return keras.models.load_model(dir/f'{name}_trained')
 
 
 def get_class_names():
