@@ -1,28 +1,33 @@
 
-train_size: 0.6
-val_size: 0.2
-model_name: shortchunkcnn
+train_size: 0.7
+val_size: 0.15
+model_name: sccnn
+output_dir: models/sccnn
 batch_size: 32
-epochs: 100
+epochs: 50
 random_state: 420
-train_set_size: 0.6
-val_set_size: 0.2
 model_structure:
-  n_layers: 4
-  d_model: 128
-  n_heads: 8
-  dff: 256
-  max_pos_encoding: 2048
-  init_learning_rate: 0.001
-  dropout_rate: 0.2
-  encoder_rate: 0.3
-  activations: [selu, sigmoid]
+  layers:
+    - [conv2D, 8, 3, relu]
+    - [maxpool2D, 4]
+    - [conv2D, 16, 3, relu]
+    - [maxpool2D, 4]
+    - [conv2D, 32, 3, relu]
+    - [maxpool2D, 4]
+    - [conv2D, 64, 3, relu]
+    - [maxpool2D, 4]
+    - [conv2D, 64, 3, relu]
+  dense_size: 32
 training:
   monitor: val_loss
   monitor_mode: min
   save_best_weights: True
   lr_reducing:
     monitor: val_loss
-    patience: 20
+    patience: 3
     min_lr: 1.e-7
     mode: min
+  early_stopping:
+    patience: 8
+    monitor: val_loss
+    restore_best_weights: True
