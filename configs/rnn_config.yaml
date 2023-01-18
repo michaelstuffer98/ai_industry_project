@@ -1,9 +1,10 @@
 batch_size: 128
 epochs: 40
 model_name: rnn
+output_dir: models/rnn
 random_state: 420
-train_set_size: 0.6
-val_set_size: 0.2
+train_set_size: 0.7
+val_set_size: 0.15
 data_dir: data
 model_structure:
   n_layers: 2
@@ -12,6 +13,7 @@ model_structure:
   init_learning_rate: 0.0001
   dropout_rate: 0.3
   activations: [selu, sigmoid]
+  dense_layer_class_ratio: 8
 training:
   monitor: val_loss
   monitor_mode: min
@@ -22,7 +24,7 @@ training:
     min_lr: 1.e-7
     mode: min
   early_stopping:
-    patience: 3
+    patience: 5
     monitor: val_loss
     mode: min
     start_from_epoch: 1
