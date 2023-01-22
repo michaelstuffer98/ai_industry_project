@@ -142,3 +142,19 @@ def get_config(name):
     # read in the config
     with open(f'configs/{name}_config.yaml', 'r') as f:
         return yaml.safe_load(f)
+
+def get_label_distribution(labels):
+    labels_unique, amounts = np.unique(labels, return_counts=True, axis=0)
+
+    labels_to_id = get_class_mapping()
+
+    id_to_labels = {}
+    for key in labels_to_id:
+        id_to_labels[labels_to_id[key]] = key
+
+    class_distribution = {}
+    for l in zip(labels_unique, amounts):
+        class_name = id_to_labels[np.argmax(l[0])]
+        class_distribution[class_name] = l[1]
+
+    return class_distribution
