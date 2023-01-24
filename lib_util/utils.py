@@ -1,9 +1,3 @@
-"""
-save and load numpy array
-split them into multiple files to keep the file size below 100MB,
-since GitHub does not support files >100MB
-"""
-
 import numpy as np
 from pathlib import Path
 import os
@@ -15,6 +9,12 @@ import json
 
 
 def save_numpy_array_sliced(filename, data, data_dir='data', max_size_mb=90):
+    """
+    save and load numpy array
+    split them into multiple files to keep the file size below 100MB,
+    since GitHub does not support files >100MB
+    """
+
     assert data.ndim == 2
     
     data_dir = Path(data_dir)
@@ -71,7 +71,9 @@ def load_sliced_numpy_array(filename, data_dir = 'data'):
 
 
 def test_load_save_routine():
-    # Check if array after saving and loading is still equal
+    """
+    Check if array after sliced saving and loading is still equal
+    """ 
     array_before = np.random.randint(0, 100, (10000, 500))
 
     n_iter = save_numpy_array_sliced('tmp_array', array_before, max_size_mb=1)
@@ -84,6 +86,9 @@ def test_load_save_routine():
 
 
 def save_training(to_dump: dict, name:str, dir='models'):
+    """
+    dump the training results to the 'dir', in order to maitain a uniform naming convention
+    """
     dir = Path(dir)
     
     model = to_dump['model']
@@ -98,28 +103,40 @@ def save_training(to_dump: dict, name:str, dir='models'):
 
 
 def load_history(name, dir='models'):
+    """
+    Get the saved hostory object as 'dict'
+    """
     dir = Path(dir)
     with open(dir/f'{name}_history', 'rb') as f:
         return pickle.load(f)
 
 def load_model(name, dir='models'):
+    """
+    Loads the saved model from directory
+    """
     dir = Path(dir)
     return keras.models.load_model(dir/f'{name}_trained')
 
 
 def get_class_names():
+    """
+    returns the class names as strings
+    """
     with open('data/class_label_index_mapping.json', 'r') as f:
         return json.load(f).keys()
 
 
 def get_class_mapping():
+    """
+    returns the mapping from string class names to the label id
+    """
     with open('data/class_label_index_mapping.json', 'r') as f:
         return json.load(f)
 
 
 def audio_file_iterator(mute=False):
     """
-    Iteratable object to iterate over all wav-audio files in the 'wav_data' directory
+    Iteratable generator object to iterate over all wav-audio files in the 'wav_data' directory
         mute: if true, all output is suppressed
         returns: each audio file with the relative file path in the project
     """
@@ -139,11 +156,17 @@ def audio_file_iterator(mute=False):
 
 
 def get_config(name):
-    # read in the config
+    """
+    Get the yaml config by name from the 'config' folder
+    """
     with open(f'configs/{name}_config.yaml', 'r') as f:
         return yaml.safe_load(f)
 
 def get_label_distribution(labels, as_normalized=False):
+    """
+    Routine to return the distribution of classes in the label array
+    if as_normalized, it return relative fractions (rounded on 2 decimals) instead of absolut numbers
+    """
     labels_unique, amounts = np.unique(labels, return_counts=True, axis=0)
 
     if as_normalized:
