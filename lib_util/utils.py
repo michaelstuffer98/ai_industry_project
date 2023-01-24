@@ -143,8 +143,11 @@ def get_config(name):
     with open(f'configs/{name}_config.yaml', 'r') as f:
         return yaml.safe_load(f)
 
-def get_label_distribution(labels):
+def get_label_distribution(labels, as_normalized=False):
     labels_unique, amounts = np.unique(labels, return_counts=True, axis=0)
+
+    if as_normalized:
+        amounts = np.round(amounts/np.sum(amounts), 2)
 
     labels_to_id = get_class_mapping()
 
