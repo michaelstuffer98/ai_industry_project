@@ -4,3 +4,5 @@ downsample_rate: 16000
 melspectogram:
   n_mels: 128
   hop_length: 512
+train_set_size: 0.7
+random_state: 420
