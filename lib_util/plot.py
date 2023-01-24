@@ -3,6 +3,7 @@ import librosa.display as lrd
 import numpy as np
 import librosa
 import seaborn as sn
+from keras.utils import plot_model
 
 def plot_waveform(amp, sr):
     """
@@ -63,3 +64,7 @@ def plot_conf_mat(conf_mat_df, save_to=None, name=None, set_type=None):
     if not save_to is None:
         plt.savefig(save_to)
     plt.show()
+
+def plot_model_architecture(model, name):
+    filepath = f'Plots/architecture_{name}.png'
+    return plot_model(model, to_file=filepath, show_shapes=True, expand_nested=True)
