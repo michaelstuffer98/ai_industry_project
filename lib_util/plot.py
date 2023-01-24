@@ -10,8 +10,9 @@ def plot_waveform(amp, sr):
         amp: amplitudes as a numpy array
         sr: sample rate of the audio
     """
-    plt.figure(figsize=(14, 5))
+    fig = plt.figure(figsize=(14, 5))
     lrd.waveshow(amp, sr=sr)
+    return fig, plt.gca()
 
 def plot_melspectogram(S, sr, fmax, calculate_db=True, save_fig=True):
     fig, ax = plt.subplots()
@@ -24,6 +25,7 @@ def plot_melspectogram(S, sr, fmax, calculate_db=True, save_fig=True):
     ax.set(title='Mel-frequency spectrogram')
     if save_fig:
         fig.savefig('Plots/melfrequency_spectogram with fmax{f}.jpg'.format(f=int(fmax)))
+    return fig, ax
 
 def plot_hist(history, keys, legends, title, y_label, x_label, save_to=None):
     max_size = 0
