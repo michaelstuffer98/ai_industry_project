@@ -1,26 +1,18 @@
-batch_size: 128
-epochs: 40
+batch_size: 64
+epochs: 20
 transformer_name: my_transformer
 random_state: 420
-train_set_size: 0.6
-val_set_size: 0.2
-data_dir: data
+train_set_size: 0.7
+val_set_size: 0.15
 model_structure:
-  n_layers: 4
+  n_layers: 12
   d_model: 128
-  n_heads: 8
-  dff: 256
-  max_pos_encoding: 2048
-  init_learning_rate: 0.0001
-  dropout_rate: 0.2
-  encoder_rate: 0.3
-  activations: [selu, sigmoid]
-training:
+  n_heads: 10
+  dff: 128
+  dropout_rate: 0.1
+pos_encoding_length: 2048
+early_stopping:
+  patience: 5
   monitor: val_loss
-  monitor_mode: min
-  save_best_weights: True
-  lr_reducing:
-    monitor: val_loss
-    patience: 5
-    min_lr: 1.e-7
-    mode: min
+  restore_best_weights: True
+  start_from: 2
